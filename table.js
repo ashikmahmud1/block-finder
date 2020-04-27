@@ -223,7 +223,7 @@ function searchInPaths(top_to_bottom_paths, paths_to_find) {
 }
 
 function pathExist(merged_paths, new_paths) {
-    for (let i = 0; i < merged_paths; i++) {
+    for (let i = 0; i < merged_paths.length; i++) {
         // for comparing array of object
         if (JSON.stringify(merged_paths[i]) === JSON.stringify(new_paths))
             return true;
