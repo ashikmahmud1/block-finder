@@ -1,0 +1,67 @@
+* { margin: 0; padding: 0; }
+body { font: 14px Georgia, serif;}
+
+#game-table { width: 500px; height: 500px; border-collapse: collapse; }
+#game-table td { border: 1px dotted #ccc; }
+
+#table-wrap { position: relative; width: 500px; background-color: blueviolet; margin: 0 auto;}
+#table-wrap table { position: relative; z-index: 10; }
+
+.left_border{
+    border-left: 3px solid violet !important;
+}
+.right_border{
+    border-right: 3px solid violet !important;
+}
+.top_border{
+    border-top: 3px solid violet !important;
+}
+.bottom_border{
+    border-bottom: 3px solid violet !important;
+}
+
+#draw_left_border{
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: white;
+    color: #000;
+}
+#draw_right_border{
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: white;
+    color: #000;
+}
+#draw_top_border{
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: white;
+    color: #000;
+}
+#draw_bottom_border{
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: white;
+    color: #000;
+}
+#find_paths{
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 80px;
+    height: 40px;
+    border-radius: 5px;
+    background-color: white;
+    color: #000;
+}
