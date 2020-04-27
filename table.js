@@ -1,5 +1,3 @@
-
-
 let table_element = document.getElementById("game-table-body");
 let game_table = []; // game table will be a 2d array which will represent
 let paths = [];
@@ -55,6 +53,7 @@ draw_bottom_button.addEventListener('click', function () {
 });
 
 find_paths.addEventListener('click', function () {
+    paths = [];
     findPaths();
 });
 
@@ -72,7 +71,6 @@ function createChunk(myArray, chunk_size) {
 }
 
 function focusInput(row, col) {
-    console.log(row, col);
     // check if draw left border is true than make the game_table[row][col].right = true
     if (draw_left_border) {
         // previous column add the right as the same value
@@ -119,15 +117,18 @@ function updateTable() {
     }
 }
 
-function previousConnectionRow(new_paths) {
+function previousConnectionRow(new_paths, reverse_order = false) {
     let found_row_index = -1;
     for (let i = 0; i < new_paths.length; i++) {
 
         for (let row = 0; row < paths.length; row++) {
             for (let col = 0; col < paths[row].length; col++) {
                 // checking if this is the immediate top row
-                if (new_paths[i].col === paths[row][col].col && new_paths[i].row === paths[row][col].row + 1) {
-                    if (!game_table[new_paths[i].row - 1][new_paths[i].col].bottom) {
+                let path_row = reverse_order ? paths[row][col].row - 1 : paths[row][col].row + 1;
+                if (new_paths[i].col === paths[row][col].col && new_paths[i].row === path_row) {
+                    let new_path_row = reverse_order ? new_paths[i].row + 1 : new_paths[i].row - 1;
+                    let path_border = reverse_order ? game_table[new_path_row][new_paths[i].col].top : game_table[new_path_row][new_paths[i].col].bottom;
+                    if (!path_border) {
                         found_row_index = row;
                         return found_row_index;
                     }
@@ -138,47 +139,146 @@ function previousConnectionRow(new_paths) {
     return found_row_index;
 }
 
-function explorePaths() {
+function explorePaths(reverse_order) {
 
     // forEach path in the path_trackers check connection with the previous row
     // path_trackers is a 2d array
     for (let i = 0; i < paths_tracker.length; i++) {
-        let path_row = previousConnectionRow(paths_tracker[i]);
+        let path_row = previousConnectionRow(paths_tracker[i], reverse_order);
 
-        if(path_row !== -1){
+        if (path_row !== -1) {
             // this is a part of previously explored path
-            for(let j = 0;j < paths_tracker[i].length;j++){
+            for (let j = 0; j < paths_tracker[i].length; j++) {
                 paths[path_row].push(paths_tracker[i][j]);
             }
-        } else{
+        } else {
             // this one is a newly explored path
             paths.push(paths_tracker[i]);
         }
     }
 }
 
-function findPaths() {
-    // here scaning the first row and exploring all new paths
+function findTopBottomPaths() {
+    // this is reverse scanning pattern that means bottom to top.
+    // here scanning the last row and exploring all new paths
     for (let j = 0; j < game_table.length; j++) {
         checkConnection(0, j, paths);
     }
-
     // here scan the game table from the 2nd row i=1
-    // here will get the new_paths 
+    // here will get the new_paths
     // after getting the new_paths needs to check if new_paths any path has connection with previously explored paths path
     // if any path has connection with previously explored path then new_paths is a part of that paths
     // if no connection with previously explored path then this needs to be added to paths as a new_paths
 
+    // game_table.length - 2 because last row already scanned. so it will scan from second last row
     for (let i = 1; i < game_table.length; i++) {
         for (let j = 0; j < game_table.length; j++) {
             checkConnection(i, j, paths_tracker);
         }
 
-        explorePaths(paths_tracker);
+        explorePaths(false);
         // here check paths_tracker paths with the previously explored paths
         // and finally make the paths_tracker array empty
         paths_tracker = [];
     }
+}
+
+function findBottomTopPaths() {
+    // this is reverse scanning pattern that means bottom to top.
+    // here scanning the last row and exploring all new paths
+    for (let j = 0; j < game_table.length; j++) {
+        checkConnection(game_table.length - 1, j, paths);
+    }
+    // here scan the game table from the 2nd row i=1
+    // here will get the new_paths
+    // after getting the new_paths needs to check if new_paths any path has connection with previously explored paths path
+    // if any path has connection with previously explored path then new_paths is a part of that paths
+    // if no connection with previously explored path then this needs to be added to paths as a new_paths
+
+    // game_table.length - 2 because last row already scanned. so it will scan from second last row
+    for (let i = game_table.length - 2; i >= 0; i--) {
+        for (let j = 0; j < game_table.length; j++) {
+            checkConnection(i, j, paths_tracker);
+        }
+
+        explorePaths(true);
+        // here check paths_tracker paths with the previously explored paths
+        // and finally make the paths_tracker array empty
+        paths_tracker = [];
+    }
+}
+
+function searchInPaths(top_to_bottom_paths, paths_to_find) {
+    for (let i = 0; i < paths_to_find.length; i++) {
+
+        for (let row = 0; row < top_to_bottom_paths.length; row++) {
+            for (let col = 0; col < top_to_bottom_paths[row].length; col++) {
+                if (top_to_bottom_paths[row][col].row === paths_to_find[i].row && top_to_bottom_paths[row][col].col === paths_to_find[i].col) {
+                    return top_to_bottom_paths[row];
+                }
+            }
+        }
+    }
+    return paths_to_find;
+}
+
+function pathExist(merged_paths, new_paths) {
+    for (let i = 0; i < merged_paths; i++) {
+        // for comparing array of object
+        if (JSON.stringify(merged_paths[i]) === JSON.stringify(new_paths))
+            return true;
+    }
+    return false;
+}
+
+function mergePaths(top_to_bottom_paths, bottom_to_top_paths) {
+    let paths_to_merge = [];
+
+    for (let i = 0; i < bottom_to_top_paths.length; i++) {
+        if (bottom_to_top_paths[i].length < 9) {
+            paths_to_merge.push(i);
+        }
+    }
+
+    if (paths_to_merge.length !== 0) {
+        // this means there is some paths which needs to merge
+        let merged_paths = [];
+        for (let i = 0; i < paths_to_merge.length; i++) {
+            let new_paths = searchInPaths(top_to_bottom_paths, bottom_to_top_paths[paths_to_merge[i]]);
+            if (!pathExist(merged_paths, new_paths))
+                merged_paths.push(new_paths);
+        }
+        // remove merged paths from the bottom_to_top_paths
+        for (let i = 0; i < bottom_to_top_paths.length; i++) {
+            if (bottom_to_top_paths[i].length < 9){
+                bottom_to_top_paths.splice(i,1);
+            }
+        }
+        // finally add the merged path to the bottom_to_top_paths
+        for (let i = 0; i < merged_paths.length; i++) {
+            bottom_to_top_paths.push(merged_paths[i]);
+        }
+        paths = bottom_to_top_paths;
+    } else {
+        paths = bottom_to_top_paths;
+    }
+}
+
+function findPaths() {
+    findBottomTopPaths();
+    let bottom_to_top_paths = [...paths];
+    paths = [];
+    findTopBottomPaths();
+    let top_to_bottom_paths = [...paths];
+    paths = [];
+
+    // now need to merge this two paths
+    console.log("****** Bottom To Top Paths *******");
+    console.log(bottom_to_top_paths);
+    console.log("****** Top To Bottom Paths *******");
+    console.log(top_to_bottom_paths);
+    mergePaths(top_to_bottom_paths, bottom_to_top_paths);
+    console.log("***** Merged Paths ********");
     console.log(paths);
 }
 
@@ -190,12 +290,11 @@ function addToPath(preRow, preCol, row, col, paths_array) {
         for (let j = 0; j < paths_array[i].length; j++) {
             if (paths_array[i][j].row === preRow && paths_array[i][j].col === preCol) {
                 foundRow = i;
-                break;
+                paths_array[foundRow].push({row, col});
+                return;
             }
         }
     }
-
-    paths_array[foundRow].push({ row, col });
 }
 
 function checkConnection(row, col, paths_array) {
@@ -209,7 +308,7 @@ function checkConnection(row, col, paths_array) {
         // here we don't need to check any connection. this is the first node
         // we just need to add this node into the paths
         let new_path = [];
-        new_path.push({ row, col });
+        new_path.push({row, col});
         paths_array.push(new_path);
     } else {
         // here need to check only previous col
@@ -218,7 +317,7 @@ function checkConnection(row, col, paths_array) {
         } else {
             // create this one as the new path
             let new_path = [];
-            new_path.push({ row, col });
+            new_path.push({row, col});
             paths_array.push(new_path);
         }
     }
@@ -229,7 +328,7 @@ function initializeTable() {
     let arr = [];
 
     for (let i = 0; i < 81; i++) {
-        arr.push({ value: '0', left: false, right: false, top: false, bottom: false });
+        arr.push({value: '0', left: false, right: false, top: false, bottom: false});
     }
 
     game_table = createChunk(arr, 9);
