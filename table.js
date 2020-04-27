@@ -245,15 +245,13 @@ function mergePaths(top_to_bottom_paths, bottom_to_top_paths) {
         let merged_paths = [];
         for (let i = 0; i < paths_to_merge.length; i++) {
             let new_paths = searchInPaths(top_to_bottom_paths, bottom_to_top_paths[paths_to_merge[i]]);
-            if (!pathExist(merged_paths, new_paths))
+            if (!pathExist(merged_paths, new_paths) && new_paths.length === 9)
                 merged_paths.push(new_paths);
         }
         // remove merged paths from the bottom_to_top_paths
-        for (let i = 0; i < bottom_to_top_paths.length; i++) {
-            if (bottom_to_top_paths[i].length < 9){
-                bottom_to_top_paths.splice(i,1);
-            }
-        }
+        bottom_to_top_paths = bottom_to_top_paths.filter(path => path.length === 9);
+        console.log("***** Merged Paths ********");
+        console.log(merged_paths);
         // finally add the merged path to the bottom_to_top_paths
         for (let i = 0; i < merged_paths.length; i++) {
             bottom_to_top_paths.push(merged_paths[i]);
@@ -271,14 +269,8 @@ function findPaths() {
     findTopBottomPaths();
     let top_to_bottom_paths = [...paths];
     paths = [];
-
     // now need to merge this two paths
-    console.log("****** Bottom To Top Paths *******");
-    console.log(bottom_to_top_paths);
-    console.log("****** Top To Bottom Paths *******");
-    console.log(top_to_bottom_paths);
     mergePaths(top_to_bottom_paths, bottom_to_top_paths);
-    console.log("***** Merged Paths ********");
     console.log(paths);
 }
 
